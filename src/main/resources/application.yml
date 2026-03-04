@@ -1,0 +1,24 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: flow-center
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/flowcenter?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+
+flowable:
+  async-executor-activate: false
+  database-schema-update: false
+  check-process-definitions: false
+  idm:
+    enabled: false
+  eventregistry:
+    enabled: false
