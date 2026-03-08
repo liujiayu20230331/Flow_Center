@@ -1,11 +1,20 @@
 package com.flowcenter.controller;
 
+import com.flowcenter.domain.dto.request.ProcessIdRequest;
+import com.flowcenter.domain.dto.request.QueryProcessPageRequest;
 import com.flowcenter.domain.dto.request.SaveProcessRequest;
-import com.flowcenter.domain.dto.response.*;
+import com.flowcenter.domain.dto.response.PageResponse;
+import com.flowcenter.domain.dto.response.ProcessDetailResponse;
+import com.flowcenter.domain.dto.response.ProcessListItemResponse;
+import com.flowcenter.domain.dto.response.PublishProcessResponse;
+import com.flowcenter.domain.dto.response.SaveProcessResponse;
 import com.flowcenter.domain.vo.ApiResponse;
 import com.flowcenter.service.ProcessService;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
@@ -22,33 +31,35 @@ public class ProcessController {
         return ApiResponse.success(processService.saveProcess(request));
     }
 
-    @PostMapping("/publish/{id}")
-    public ApiResponse<PublishProcessResponse> publishProcess(@PathVariable Long id) {
-        return ApiResponse.success(processService.publishProcess(id));
+    @PostMapping("/publish")
+    public ApiResponse<PublishProcessResponse> publishProcess(@Valid @RequestBody ProcessIdRequest request) {
+        return ApiResponse.success(processService.publishProcess(request.getId()));
     }
 
-    @PostMapping("/disable/{id}")
-    public ApiResponse<PublishProcessResponse> disableProcess(@PathVariable Long id) {
-        return ApiResponse.success(processService.disableProcess(id));
+    @PostMapping("/disable")
+    public ApiResponse<PublishProcessResponse> disableProcess(@Valid @RequestBody ProcessIdRequest request) {
+        return ApiResponse.success(processService.disableProcess(request.getId()));
     }
 
-    @GetMapping("/list")
-    public ApiResponse<PageResponse<ProcessListItemResponse>> queryProcessList(
-            @RequestParam(required = false) Long pageNum,
-            @RequestParam(required = false) Long pageSize,
-            @RequestParam(required = false) String processName,
-            @RequestParam(required = false) String status) {
-        return ApiResponse.success(processService.queryProcessPage(pageNum, pageSize, processName, status));
+    @PostMapping("/list")
+    public ApiResponse<PageResponse<ProcessListItemResponse>> queryProcessList(@RequestBody(required = false) QueryProcessPageRequest request) {
+        QueryProcessPageRequest actualRequest = request == null ? new QueryProcessPageRequest() : request;
+        return ApiResponse.success(processService.queryProcessPage(
+                actualRequest.getPageNum(),
+                actualRequest.getPageSize(),
+                actualRequest.getProcessName(),
+                actualRequest.getStatus()
+        ));
     }
 
-    @GetMapping("/{id}")
-    public ApiResponse<ProcessDetailResponse> queryProcessDetail(@PathVariable Long id) {
-        return ApiResponse.success(processService.queryProcessDetail(id));
+    @PostMapping("/detail")
+    public ApiResponse<ProcessDetailResponse> queryProcessDetail(@Valid @RequestBody ProcessIdRequest request) {
+        return ApiResponse.success(processService.queryProcessDetail(request.getId()));
     }
 
-    @DeleteMapping("/{id}")
-    public ApiResponse<Void> deleteProcess(@PathVariable Long id) {
-        processService.deleteProcess(id);
+    @PostMapping("/delete")
+    public ApiResponse<Void> deleteProcess(@Valid @RequestBody ProcessIdRequest request) {
+        processService.deleteProcess(request.getId());
         return ApiResponse.success(null);
     }
 }

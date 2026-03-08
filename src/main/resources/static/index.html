@@ -1,1 +1,151 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><title>FlowCenter</title></head><body><h1>FlowCenter API Ready</h1><p>Use /process/* APIs and integrate bpmn-js UI.</p></body></html>
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlowCenter 流程设计台</title>
+  <link rel="stylesheet" href="https://unpkg.com/bpmn-js@11.5.0/dist/assets/diagram-js.css">
+  <link rel="stylesheet" href="https://unpkg.com/bpmn-js@11.5.0/dist/assets/bpmn-js.css">
+  <link rel="stylesheet" href="https://unpkg.com/bpmn-font@0.14.0/dist/css/bpmn.css">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="panel menu">
+    <div class="brand">
+      <span class="eyebrow">流程中心</span>
+      <h1>流程设计台</h1>
+      <p>以菜单模式组织审批流管理、流程设计和版本查看。</p>
+    </div>
+
+    <div>
+      <div class="section-title">功能菜单</div>
+      <p class="hint">默认首页展示审批流列表，点击左侧菜单聚焦当前工作区域。</p>
+    </div>
+
+    <div class="menu-nav">
+      <div class="menu-item active" data-menu="list">
+        <div class="menu-item-title">审批流列表</div>
+        <div class="menu-item-desc">查看全部流程、筛选状态、进入设计与维护。</div>
+      </div>
+      <div class="menu-item" data-menu="designer">
+        <div class="menu-item-title">流程设计</div>
+        <div class="menu-item-desc">绘制流程图，保存草稿并发布到 Flowable。</div>
+      </div>
+      <div class="menu-item" data-menu="versions">
+        <div class="menu-item-title">版本记录</div>
+        <div class="menu-item-desc">查看发布版本、部署信息和当前状态。</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="panel workspace workspace-block">
+    <div class="workspace-header">
+      <div class="workspace-title">
+        <span class="eyebrow">审批流工作台</span>
+        <h2 id="workspaceName">审批流列表</h2>
+        <p class="meta" id="workspaceMeta">首页默认展示审批流列表，点击流程后可直接进入中文流程设计。</p>
+      </div>
+      <div class="workspace-tools">
+        <button id="backListButton" class="button-secondary">返回列表</button>
+        <button id="newButton" class="button-secondary">新建流程</button>
+        <button id="fitButton" class="button-secondary">适配画布</button>
+        <button id="saveButton" class="button-primary">保存草稿</button>
+        <button id="publishButton" class="button-secondary">发布流程</button>
+      </div>
+    </div>
+
+    <section class="list-panel">
+      <div class="list-panel-header">
+        <div>
+          <div class="section-title">首页</div>
+          <h3>审批流列表</h3>
+        </div>
+        <button id="refreshListButton" class="button-secondary">刷新列表</button>
+      </div>
+      <div class="list-panel-grid">
+        <div class="field">
+          <label for="searchName">流程名称</label>
+          <input id="searchName" placeholder="输入审批流名称筛选">
+        </div>
+        <div class="field">
+          <label for="searchStatus">状态筛选</label>
+          <select id="searchStatus">
+            <option value="">全部状态</option>
+            <option value="DRAFT">草稿</option>
+            <option value="PUBLISHED">已发布</option>
+            <option value="DISABLED">已停用</option>
+          </select>
+        </div>
+      </div>
+      <div id="processList" class="list"></div>
+    </section>
+
+    <section class="version-stage">
+      <div class="section-title">版本视图</div>
+      <h3 id="versionStageTitle">审批流版本记录</h3>
+      <p id="versionStageMeta">从左侧选择“版本记录”菜单后，可聚焦查看当前审批流的所有发布版本。</p>
+      <div id="versionStageList" class="version-stage-grid"></div>
+    </section>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="section-title">当前状态</div>
+        <div id="currentStatus" class="stat-value">草稿</div>
+      </div>
+      <div class="stat-card">
+        <div class="section-title">当前版本</div>
+        <div id="currentVersion" class="stat-value">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="section-title">流程 ID</div>
+        <div id="currentId" class="stat-value">新建</div>
+      </div>
+    </div>
+
+    <div class="canvas-wrap">
+      <div id="canvas"></div>
+    </div>
+  </main>
+
+  <aside class="panel inspector">
+    <div>
+      <div class="section-title">基础信息</div>
+      <p class="hint">流程编码创建后不可修改。页面文案与默认流程图内容均统一为中文展示。</p>
+    </div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label for="processKey">流程编码</label>
+        <input id="processKey" placeholder="例如 qingjia-shenpi">
+      </div>
+      <div class="field">
+        <label for="processName">流程名称</label>
+        <input id="processName" placeholder="例如 请假审批流">
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title">当前信息</div>
+      <p class="meta" id="detailSummary">尚未选择流程，当前处于新建模式。</p>
+    </div>
+
+    <div class="actions">
+      <button id="disableButton" class="button-secondary">停用流程</button>
+      <button id="deleteButton" class="button-danger">删除草稿</button>
+    </div>
+
+    <div>
+      <div class="section-title">版本记录</div>
+      <p class="hint">发布成功后会自动生成版本记录，并写入 Flowable 部署信息。</p>
+    </div>
+    <div id="versionList" class="version-list"></div>
+  </aside>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="https://unpkg.com/bpmn-js@11.5.0/dist/bpmn-modeler.development.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>
