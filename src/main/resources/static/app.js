@@ -130,13 +130,20 @@ const state = {
   currentVersion: 0,
   versions: [],
   dirty: false,
-  currentView: 'list'
+  currentView: 'list',
+  tenantCurrentId: null
 };
 
 const element = {
   workspace: document.querySelector('.workspace'),
   menuItems: Array.from(document.querySelectorAll('.menu-item')),
   processList: document.getElementById('processList'),
+  tenantPanel: document.getElementById('tenantPanel'),
+  tenantList: document.getElementById('tenantList'),
+  tenantCode: document.getElementById('tenantCode'),
+  tenantName: document.getElementById('tenantName'),
+  tenantSearchCode: document.getElementById('tenantSearchCode'),
+  tenantSearchName: document.getElementById('tenantSearchName'),
   processKey: document.getElementById('processKey'),
   processName: document.getElementById('processName'),
   searchName: document.getElementById('searchName'),
@@ -159,6 +166,10 @@ const element = {
   fitButton: document.getElementById('fitButton'),
   newButton: document.getElementById('newButton'),
   refreshListButton: document.getElementById('refreshListButton'),
+  refreshTenantButton: document.getElementById('refreshTenantButton'),
+  newTenantButton: document.getElementById('newTenantButton'),
+  saveTenantButton: document.getElementById('saveTenantButton'),
+  deleteTenantButton: document.getElementById('deleteTenantButton'),
   toast: document.getElementById('toast')
 };
 
@@ -232,6 +243,9 @@ function switchView(view) {
   element.workspace.classList.toggle('detail-mode', view === 'detail');
   element.workspace.classList.toggle('versions-mode', view === 'versions');
   element.backListButton.classList.toggle('hidden', view === 'list');
+  if (element.tenantPanel) {
+    element.tenantPanel.classList.toggle('hidden', view !== 'list');
+  }
   if (view === 'detail') setMenu('designer');
   else if (view === 'versions') setMenu('versions');
   else setMenu('list');
@@ -307,6 +321,102 @@ function renderProcessList(records) {
   }).join('');
 }
 
+
+function renderTenantList(records) {
+  if (!records.length) {
+    element.tenantList.innerHTML = '<div class="empty">No tenants found.</div>';
+    return;
+  }
+  element.tenantList.innerHTML = records.map(function (item) {
+    const active = state.tenantCurrentId === item.id ? ' active' : '';
+    return [
+      '<div class="tenant-card' + active + '" data-id="' + item.id + '">',
+      '  <div class="tenant-card-header">',
+      '    <div class="tenant-name">' + escapeHtml(item.tenantName) + '</div>',
+      '    <span class="' + getStatusClass(item.status || 'DRAFT') + '">' + escapeHtml(item.status || 'ACTIVE') + '</span>',
+      '  </div>',
+      '  <div class="tenant-code">' + escapeHtml(item.tenantCode) + '</div>',
+      '  <div class="meta">Updated: ' + escapeHtml(item.updatedAt || '-') + '</div>',
+      '</div>'
+    ].join('');
+  }).join('');
+}
+
+function resetTenantEditor() {
+  state.tenantCurrentId = null;
+  element.tenantCode.disabled = false;
+  element.tenantCode.value = '';
+  element.tenantName.value = '';
+}
+
+async function loadTenantList() {
+  const data = await request('/tenant/list', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      pageNum: 1,
+      pageSize: 100,
+      tenantCode: element.tenantSearchCode.value.trim(),
+      tenantName: element.tenantSearchName.value.trim(),
+      status: ''
+    })
+  });
+  renderTenantList(data.records || []);
+}
+
+async function loadTenantDetail(id) {
+  const detail = await request('/tenant/detail', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: Number(id) })
+  });
+  state.tenantCurrentId = detail.id;
+  element.tenantCode.value = detail.tenantCode || '';
+  element.tenantName.value = detail.tenantName || '';
+  element.tenantCode.disabled = true;
+  await loadTenantList();
+}
+
+async function handleTenantSave() {
+  const tenantCode = element.tenantCode.value.trim();
+  const tenantName = element.tenantName.value.trim();
+  if (!tenantCode || !tenantName) {
+    showToast('Please input tenant code and tenant name.', true);
+    return;
+  }
+
+  await request('/tenant/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      id: state.tenantCurrentId,
+      tenantCode: tenantCode,
+      tenantName: tenantName
+    })
+  });
+
+  await loadTenantList();
+  showToast('Tenant saved.');
+}
+
+async function handleTenantDelete() {
+  if (state.tenantCurrentId == null) {
+    showToast('Please select a tenant first.', true);
+    return;
+  }
+  if (!window.confirm('Delete current tenant?')) {
+    return;
+  }
+  await request('/tenant/delete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: state.tenantCurrentId })
+  });
+  resetTenantEditor();
+  await loadTenantList();
+  showToast('Tenant deleted.');
+}
+
 function escapeHtml(value) {
   return String(value)
     .replace(/&/g, '&amp;')
@@ -349,6 +459,8 @@ async function loadDetail(id) {
   updateHeader();
   renderVersions();
   await loadList();
+  resetTenantEditor();
+  await loadTenantList();
 }
 
 async function resetDesigner() {
@@ -365,6 +477,8 @@ async function resetDesigner() {
   updateHeader();
   renderVersions();
   await loadList();
+  resetTenantEditor();
+  await loadTenantList();
 }
 
 async function handleSave() {
@@ -446,8 +560,16 @@ function bindEvents() {
   element.fitButton.addEventListener('click', fitViewport);
   element.newButton.addEventListener('click', function () { resetDesigner().catch(handleError); });
   element.refreshListButton.addEventListener('click', function () { loadList().catch(handleError); });
+  element.refreshTenantButton.addEventListener('click', function () { loadTenantList().catch(handleError); });
+  element.newTenantButton.addEventListener('click', function () { resetTenantEditor(); loadTenantList().catch(handleError); });
+  element.saveTenantButton.addEventListener('click', function () { handleTenantSave().catch(handleError); });
+  element.deleteTenantButton.addEventListener('click', function () { handleTenantDelete().catch(handleError); });
   element.searchName.addEventListener('keydown', function (event) { if (event.key === 'Enter') loadList().catch(handleError); });
+  element.tenantSearchCode.addEventListener('keydown', function (event) { if (event.key === 'Enter') loadTenantList().catch(handleError); });
+  element.tenantSearchName.addEventListener('keydown', function (event) { if (event.key === 'Enter') loadTenantList().catch(handleError); });
   element.searchStatus.addEventListener('change', function () { loadList().catch(handleError); });
+  element.tenantSearchCode.addEventListener('change', function () { loadTenantList().catch(handleError); });
+  element.tenantSearchName.addEventListener('change', function () { loadTenantList().catch(handleError); });
   element.processName.addEventListener('input', updateHeader);
   element.processKey.addEventListener('input', updateHeader);
   element.menuItems.forEach(function (item) {
@@ -481,6 +603,11 @@ function bindEvents() {
     if (!card) return;
     loadDetail(card.getAttribute('data-id')).catch(handleError);
   });
+  element.tenantList.addEventListener('click', function (event) {
+    const card = event.target.closest('.tenant-card');
+    if (!card) return;
+    loadTenantDetail(card.getAttribute('data-id')).catch(handleError);
+  });
   modeler.on('commandStack.changed', function () { state.dirty = true; });
 }
 
@@ -507,6 +634,8 @@ async function initialize() {
   updateHeader();
   renderVersions();
   await loadList();
+  resetTenantEditor();
+  await loadTenantList();
 }
 
 initialize().catch(handleError);

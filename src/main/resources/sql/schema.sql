@@ -1,3 +1,17 @@
+﻿CREATE TABLE IF NOT EXISTS tenant (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  tenant_code VARCHAR(64) NOT NULL,
+  tenant_name VARCHAR(128) NOT NULL,
+  status VARCHAR(16) NOT NULL DEFAULT 'ACTIVE',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_tenant_code (tenant_code),
+  KEY idx_tenant_name (tenant_name),
+  KEY idx_status (status),
+  KEY idx_updated_at (updated_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS process_definition (
   id BIGINT NOT NULL AUTO_INCREMENT,
   process_key VARCHAR(64) NOT NULL,

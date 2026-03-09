@@ -1,14 +1,18 @@
-# FlowCenter
+﻿# FlowCenter
 
 Spring Boot + Flowable + MyBatis-Plus skeleton created from PRD.
 
 ## APIs
+- POST /tenant/save
+- POST /tenant/list
+- POST /tenant/detail
+- POST /tenant/delete
 - POST /process/save
-- POST /process/publish/{id}
-- POST /process/disable/{id}
-- GET /process/list?pageNum=1&pageSize=20
-- GET /process/{id}
-- DELETE /process/{id}
+- POST /process/publish
+- POST /process/disable
+- POST /process/list
+- POST /process/detail
+- POST /process/delete
 
 ## Run
 1. Create DB `flowcenter` (utf8mb4).

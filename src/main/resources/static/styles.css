@@ -524,3 +524,62 @@ button:disabled {
     min-height: 460px;
   }
 }
+
+#tenantPanel {
+  margin-top: 0;
+}
+
+.tenant-editor {
+  margin-bottom: 14px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(240, 235, 229, 0.62);
+}
+
+.tenant-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.tenant-card {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(240, 235, 229, 0.84);
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.tenant-card:hover,
+.tenant-card.active {
+  transform: translateX(2px);
+  border-color: rgba(142, 95, 77, 0.32);
+  background: #e8e1d7;
+}
+
+.tenant-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tenant-name {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.tenant-code {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 6px;
+  word-break: break-all;
+}
+
+@media (max-width: 900px) {
+  .tenant-actions {
+    grid-template-columns: 1fr;
+  }
+}

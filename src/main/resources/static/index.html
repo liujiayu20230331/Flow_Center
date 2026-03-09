@@ -81,6 +81,44 @@
       <div id="processList" class="list"></div>
     </section>
 
+    <section class="list-panel" id="tenantPanel">
+      <div class="list-panel-header">
+        <div>
+          <div class="section-title">Tenant</div>
+          <h3>Tenant Management</h3>
+        </div>
+        <button id="refreshTenantButton" class="button-secondary">Refresh Tenants</button>
+      </div>
+      <div class="list-panel-grid">
+        <div class="field">
+          <label for="tenantSearchCode">Tenant Code</label>
+          <input id="tenantSearchCode" placeholder="Search by tenant code">
+        </div>
+        <div class="field">
+          <label for="tenantSearchName">Tenant Name</label>
+          <input id="tenantSearchName" placeholder="Search by tenant name">
+        </div>
+      </div>
+      <div class="tenant-editor">
+        <div class="list-panel-grid">
+          <div class="field">
+            <label for="tenantCode">Tenant Code</label>
+            <input id="tenantCode" placeholder="For example tenant_a">
+          </div>
+          <div class="field">
+            <label for="tenantName">Tenant Name</label>
+            <input id="tenantName" placeholder="For example Tenant A">
+          </div>
+        </div>
+        <div class="tenant-actions">
+          <button id="newTenantButton" class="button-secondary">New Tenant</button>
+          <button id="saveTenantButton" class="button-primary">Save Tenant</button>
+          <button id="deleteTenantButton" class="button-danger">Delete Tenant</button>
+        </div>
+      </div>
+      <div id="tenantList" class="list"></div>
+    </section>
+
     <section class="version-stage">
       <div class="section-title">版本视图</div>
       <h3 id="versionStageTitle">审批流版本记录</h3>
